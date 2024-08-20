@@ -26,15 +26,16 @@ contract GovernanceProxy {
         uint256 forVotes;
         uint256 againstVotes;
         uint256 startTime;
-        uint256 endTime;  // Added end time
+        uint256 endTime;
         uint32 executionChain;
         address target;
         bytes callData;
-        bool executed;  // Added executed flag
+        bool executed;
         mapping(address => bool) hasVoted;
     }
 
     mapping(uint256 => Proposal) public proposals;
+    uint256[] private activeProposalIds;
 
     event ProposalReceived(uint256 proposalId, string description, uint32 executionChain);
     event Voted(uint256 proposalId, address voter, bool support, uint256 weight);
@@ -87,10 +88,13 @@ contract GovernanceProxy {
         newProposal.id = proposalId;
         newProposal.description = description;
         newProposal.startTime = block.timestamp;
-        newProposal.endTime = block.timestamp + 7 days;  // Set voting period
+        newProposal.endTime = block.timestamp + 7 days;
         newProposal.executionChain = executionChain;
         newProposal.target = target;
         newProposal.callData = callData;
+        
+        activeProposalIds.push(proposalId);
+        
         emit ProposalReceived(proposalId, description, executionChain);
     }
 
@@ -99,6 +103,15 @@ contract GovernanceProxy {
         Proposal storage proposal = proposals[proposalId];
         require(proposal.id != 0, "Proposal does not exist");
         require(block.timestamp > proposal.endTime, "Voting period not ended");
+
+        // Remove the proposal from active proposals
+        for (uint i = 0; i < activeProposalIds.length; i++) {
+            if (activeProposalIds[i] == proposalId) {
+                activeProposalIds[i] = activeProposalIds[activeProposalIds.length - 1];
+                activeProposalIds.pop();
+                break;
+            }
+        }
 
         bytes memory message = abi.encode(1, proposalId, proposal.forVotes, proposal.againstVotes);
         mailbox.dispatch(homeDomain, homeCoreAddress, message);
@@ -135,13 +148,8 @@ contract GovernanceProxy {
 
         emit Voted(proposalId, msg.sender, support, weight);
     }
+
+    function getActiveProposals() external view returns (uint256[] memory) {
+        return activeProposalIds;
+    }
 }
-
-//govcore 0xf11f49eE887B3189ff87DDB8486f4aA3B11f6Ff3
-//gov proxy 0xFe1249E483cC61FcB78fb1a9E87452E86643CfFB
-
-// This is a test of proposal,
-
-//534351
-
-//11155111

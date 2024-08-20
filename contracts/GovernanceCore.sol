@@ -50,21 +50,21 @@ contract GovernanceCore is Ownable {
     uint32 public  currentChainID;
 
 
-    struct Proposal {
-        uint256 id;
-        address proposer;
-        string description;
-        uint256 forVotes;
-        uint256 againstVotes;
-        uint256 startTime;
-        bool executed;
-        uint32 executionChain;
-        address target;
-        bytes callData;
-        mapping(uint32 => bool) chainVotesCollected;
-        uint32 chainVotesCount;
-    }
-
+  struct Proposal {
+    uint256 id;
+    address proposer;
+    string description;
+    uint256 forVotes;
+    uint256 againstVotes;
+    uint256 startTime;
+    bool executed;
+    uint32 executionChain;
+    address target;
+    bytes callData;
+    mapping(uint32 => bool) chainVotesCollected;
+    uint32 chainVotesCount;
+    mapping(address => bool) hasVoted; // Add this line
+  }
     mapping(uint256 => Proposal) public proposals;
     EnumerableSet.UintSet private activeProposals;
     mapping(uint32 => bytes32) public chainToProxyAddress;
@@ -75,6 +75,7 @@ contract GovernanceCore is Ownable {
     event ProposalExecuted(uint256 indexed proposalId);
     event CrossChainProposalCreated(uint256 indexed proposalId, uint32 destinationDomain);
     event SupportedChainAdded(uint32 chainId, bytes32 proxyAddress);
+    event Voted(uint256 indexed proposalId, address voter, bool support, uint256 weight);
 
     
     constructor(address _governanceToken, address _mailbox, address _igp,uint32 chainId) Ownable(msg.sender) {
@@ -90,8 +91,12 @@ contract GovernanceCore is Ownable {
         supportedChains.push(chainId);
         emit SupportedChainAdded(chainId, proxyAddress);
     }
-   function createProposal(string memory description, uint32 executionChain, address target, bytes memory callData) external payable {
+  
+  
+  function createProposal(string memory description, uint32 executionChain, address target, bytes memory callData) external payable {
     require(governanceToken.balanceOf(msg.sender) > 0, "Must hold governance tokens to propose");
+    require(executionChain == currentChainID || chainToProxyAddress[executionChain] != bytes32(0), "Invalid execution chain");
+
     proposalCount++;
     Proposal storage newProposal = proposals[proposalCount];
     newProposal.id = proposalCount;
@@ -107,29 +112,76 @@ contract GovernanceCore is Ownable {
     emit ProposalCreated(proposalCount, msg.sender, description, executionChain);
 
     uint256 totalFee = 0;
+    uint256 dispatchedCount = 0;
     
     for (uint i = 0; i < supportedChains.length; i++) {
         uint32 chainId = supportedChains[i];
         if (chainId != currentChainID) {
-            totalFee += _dispatchProposal(chainId, proposalCount, description, executionChain, target, callData);
+            try this._dispatchProposal{value: msg.value - totalFee}(chainId, proposalCount, description, executionChain, target, callData) returns (uint256 fee) {
+                totalFee += fee;
+                dispatchedCount++;
+            } catch Error(string memory reason) {
+                emit DispatchFailed(chainId, proposalCount, reason);
+            } catch (bytes memory) {
+                emit DispatchFailed(chainId, proposalCount, "Unknown error");
+            }
         }
     }
+
+    require(dispatchedCount > 0, "Failed to dispatch to any chain");
     require(msg.value >= totalFee, "Insufficient fee provided");
     
     // Refund excess payment
     if (msg.value > totalFee) {
         payable(msg.sender).transfer(msg.value - totalFee);
     }
+  }
+
+function _dispatchProposal(uint32 destinationDomain, uint256 proposalId, string memory description, uint32 executionChain, address target, bytes memory callData) external payable returns (uint256) {
+    require(msg.sender == address(this), "Only the contract can call this function");
+
+    bytes memory message = abi.encode(0, proposalId, description, executionChain, target, callData);
+    uint256 mailboxFee = mailbox.quoteDispatch(destinationDomain, chainToProxyAddress[destinationDomain], message);
+    
+    require(msg.value >= mailboxFee, "Insufficient fee for dispatch");
+
+    bytes32 messageId = mailbox.dispatch{value: mailboxFee}(destinationDomain, chainToProxyAddress[destinationDomain], message);
+
+    // Estimate gas needed for the destination chain
+    uint256 gasAmount = 300000; // Adjust this value based on the gas needed on the destination chain
+    uint256 igpFee = igp.quoteGasPayment(destinationDomain, gasAmount);
+
+    require(msg.value >= mailboxFee + igpFee, "Insufficient fee for IGP");
+
+    igp.payForGas{value: igpFee}(messageId, destinationDomain, gasAmount, msg.sender);
+
+    emit CrossChainProposalCreated(proposalId, destinationDomain);
+
+    return mailboxFee + igpFee;
 }
 
-    function _dispatchProposal(uint32 destinationDomain, uint256 proposalId, string memory description, uint32 executionChain, address target, bytes memory callData) internal returns (uint256) {
-        bytes memory message = abi.encode(0, proposalId, description, executionChain, target, callData);
-        uint256 fee = mailbox.quoteDispatch(destinationDomain, chainToProxyAddress[destinationDomain], message);
-        bytes32 messageId = mailbox.dispatch{value: fee}(destinationDomain, chainToProxyAddress[destinationDomain], message);
-        emit CrossChainProposalCreated(proposalId, destinationDomain);
-        return fee;
+event DispatchFailed(uint32 chainId, uint256 proposalId, string reason);
+
+function vote(uint256 proposalId, bool support) external {
+    require(governanceToken.balanceOf(msg.sender) > 0, "Must hold governance tokens to vote");
+    Proposal storage proposal = proposals[proposalId];
+    require(block.timestamp <= proposal.startTime + votingPeriod, "Voting period has ended");
+    require(!proposal.executed, "Proposal already executed");
+    require(!proposal.hasVoted[msg.sender], "Already voted"); // Add this line
+
+    uint256 voteWeight = governanceToken.balanceOf(msg.sender);
+
+    if (support) {
+        proposal.forVotes += voteWeight;
+    } else {
+        proposal.againstVotes += voteWeight;
     }
 
+    proposal.hasVoted[msg.sender] = true; // Add this line
+
+    emit Voted(proposalId, msg.sender, support, voteWeight);
+    }
+    
     function collectVotes(uint256 proposalId) external payable {
         Proposal storage proposal = proposals[proposalId];
         require(block.timestamp > proposal.startTime + votingPeriod, "Voting period not ended");

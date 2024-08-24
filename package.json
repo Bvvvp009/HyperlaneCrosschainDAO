@@ -1,8 +1,13 @@
 {
   "name": "crossdao",
-  "description":"Deploy Crosschain GovernanceDAO built using Hyperlane",
+  "description": "Deploy Crosschain GovernanceDAO built using Hyperlane",
   "version": "1.0.0",
-  "keywords": ["HyperlaneDAO","CrossChain","Hyperlane","GovernanceDAO"],
+  "keywords": [
+    "HyperlaneDAO",
+    "CrossChain",
+    "Hyperlane",
+    "GovernanceDAO"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {

@@ -1,4 +1,3 @@
-const hre = require("hardhat");
 require("dotenv").config();
 const mailboxAddress = require('../constants/mailbox.json');
 const igpAddress = require('../constants/igpaddress.json');

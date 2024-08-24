@@ -22,3 +22,5 @@ task("create-proposal", "Creates a test proposal")
 
     console.log("Proposal created, transaction hash:", tx.hash);
   });
+
+  // npx hardhat --network sepolia create-proposal --contract 0x03D66E8C3b9f3A60dF278AD24AeF0a4836d735AF

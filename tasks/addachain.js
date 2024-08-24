@@ -9,3 +9,5 @@ task("add-chains", "Gets all active proposals")
   const addChains = await governanceCore.addSupportedChain(taskArgs.chain,hre.ethers.zeroPadValue(taskArgs.address,32));
   console.log("Chain added:", addChains);
 });
+
+//npx hardhat --network sepolia --chain-id 534351 --contract 

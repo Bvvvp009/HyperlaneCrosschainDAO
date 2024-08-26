@@ -65,6 +65,20 @@ contract GovernanceCore is Ownable {
     uint32 chainVotesCount;
     mapping(address => bool) hasVoted; // Add this line
   }
+
+    struct ProposalInfo {
+        uint256 id;
+        address proposer;
+        string description;
+        uint256 forVotes;
+        uint256 againstVotes;
+        uint256 startTime;
+        bool executed;
+        uint32 executionChain;
+        address target;
+        bytes callData;
+    }
+
     mapping(uint256 => Proposal) public proposals;
     EnumerableSet.UintSet private activeProposals;
     mapping(uint32 => bytes32) public chainToProxyAddress;
@@ -257,10 +271,28 @@ function vote(uint256 proposalId, bool support) external {
         mailbox.dispatch{value: fee}(destinationDomain, chainToProxyAddress[destinationDomain], message);
     }
 
-    function getActiveProposals() external view returns (uint256[] memory) {
-        return activeProposals.values();
-    }
+   function getActiveProposals() external view returns (ProposalInfo[] memory) {
+        uint256[] memory activeProposalIds = activeProposals.values();
+        ProposalInfo[] memory activeProposalsInfo = new ProposalInfo[](activeProposalIds.length);
 
+        for (uint i = 0; i < activeProposalIds.length; i++) {
+            Proposal storage proposal = proposals[activeProposalIds[i]];
+            activeProposalsInfo[i] = ProposalInfo({
+                id: proposal.id,
+                proposer: proposal.proposer,
+                description: proposal.description,
+                forVotes: proposal.forVotes,
+                againstVotes: proposal.againstVotes,
+                startTime: proposal.startTime,
+                executed: proposal.executed,
+                executionChain: proposal.executionChain,
+                target: proposal.target,
+                callData: proposal.callData
+            });
+        }
+
+        return activeProposalsInfo;
+    }
     // Function to withdraw any excess ETH
     function withdrawExcessEth() external onlyOwner {
         payable(owner()).transfer(address(this).balance);

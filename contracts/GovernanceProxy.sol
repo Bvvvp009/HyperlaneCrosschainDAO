@@ -22,6 +22,7 @@ contract GovernanceProxy {
 
     struct Proposal {
         uint256 id;
+        address proposer;
         string description;
         uint256 forVotes;
         uint256 againstVotes;
@@ -34,8 +35,22 @@ contract GovernanceProxy {
         mapping(address => bool) hasVoted;
     }
 
+    struct ProposalInfo {
+        uint256 id;
+        address proposer;
+        string description;
+        uint256 forVotes;
+        uint256 againstVotes;
+        uint256 startTime;
+        uint256 endTime;
+        uint32 executionChain;
+        address target;
+        bytes callData;
+        bool executed;
+    }
+
     mapping(uint256 => Proposal) public proposals;
-    uint256[] private activeProposalIds;
+    uint256[] public activeProposalIds;
 
     event ProposalReceived(uint256 proposalId, string description, uint32 executionChain);
     event Voted(uint256 proposalId, address voter, bool support, uint256 weight);
@@ -49,7 +64,7 @@ contract GovernanceProxy {
         homeDomain = _homeDomain;
         homeCoreAddress = _homeCoreAddress;
     }
-
+    
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this function");
         _;
@@ -79,13 +94,13 @@ contract GovernanceProxy {
             revert("Invalid action type");
         }
     }
-
-    function _handleProposalCreation(bytes calldata _body) internal {
+function _handleProposalCreation(bytes calldata _body) internal {
         (,uint256 proposalId, string memory description, uint32 executionChain, address target, bytes memory callData) = abi.decode(_body, (uint256, uint256, string, uint32, address, bytes));
         require(proposals[proposalId].id == 0, "Proposal already exists");
 
         Proposal storage newProposal = proposals[proposalId];
         newProposal.id = proposalId;
+        newProposal.proposer = msg.sender; // Set the proposer
         newProposal.description = description;
         newProposal.startTime = block.timestamp;
         newProposal.endTime = block.timestamp + 7 days;
@@ -98,6 +113,28 @@ contract GovernanceProxy {
         emit ProposalReceived(proposalId, description, executionChain);
     }
 
+    function getActiveProposals() external view returns (ProposalInfo[] memory) {
+        ProposalInfo[] memory activeProposalsInfo = new ProposalInfo[](activeProposalIds.length);
+
+        for (uint i = 0; i < activeProposalIds.length; i++) {
+            Proposal storage proposal = proposals[activeProposalIds[i]];
+            activeProposalsInfo[i] = ProposalInfo({
+                id: proposal.id,
+                proposer: proposal.proposer,
+                description: proposal.description,
+                forVotes: proposal.forVotes,
+                againstVotes: proposal.againstVotes,
+                startTime: proposal.startTime,
+                endTime: proposal.endTime,
+                executionChain: proposal.executionChain,
+                target: proposal.target,
+                callData: proposal.callData,
+                executed: proposal.executed
+            });
+        }
+
+        return activeProposalsInfo;
+    }
     function _handleVoteCollection(bytes calldata _body) internal {
         (,uint256 proposalId) = abi.decode(_body, (uint256, uint256));
         Proposal storage proposal = proposals[proposalId];
@@ -149,7 +186,5 @@ contract GovernanceProxy {
         emit Voted(proposalId, msg.sender, support, weight);
     }
 
-    function getActiveProposals() external view returns (uint256[] memory) {
-        return activeProposalIds;
-    }
+  
 }

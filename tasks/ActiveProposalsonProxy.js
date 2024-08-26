@@ -13,4 +13,4 @@ task("get-proposals", "Gets all active proposals")
     
   });
   
-  // npx hardhat --network sepolia get-proposals --contract 0x03D66E8C3b9f3A60dF278AD24AeF0a4836d735AF
+  // npx hardhat --network sepolia get-proposals --contract 0x1C4d29F59d8e603B2403F7C0187781482Db6442B

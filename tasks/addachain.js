@@ -7,7 +7,7 @@ task("add-chains", "Gets all active proposals")
   const GovernanceCore = await hre.ethers.getContractFactory("GovernanceCore");
   const governanceCore = await GovernanceCore.attach(taskArgs.contract);
   const addChains = await governanceCore.addSupportedChain(taskArgs.chain,hre.ethers.zeroPadValue(taskArgs.address,32));
-  console.log("Chain added:", addChains);
+  console.log("Chain added:", await addChains.wait());
 });
 
-//npx hardhat --network sepolia --chain-id 534351 --contract 
+// npx hardhat add-chains --network sepolia --chain-id 534351 --contract 0x1C4d29F59d8e603B2403F7C0187781482Db6442B  --address 0x7ab351416f3394F1660dE6a6a5dCE32EEc736518

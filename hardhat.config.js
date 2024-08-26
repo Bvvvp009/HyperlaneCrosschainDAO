@@ -3,9 +3,8 @@ require("dotenv").config();
 require("hardhat-deploy");
 require('./tasks/createProposal')
 require('./tasks/voteonproposal')
-//require('./tasks/addachain')
-// require('./tasks/ActiveProposalsonCore')
-require('./tasks/ActiveProposalsonProxy')
+require('./tasks/addachain')
+require('./tasks/ActiveProposalsonCore')
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

@@ -11,7 +11,7 @@ task("create-proposal", "Creates a test proposal")
 
     const tx = await governanceCore.createProposal(description, executionChain, target, callData, { value: hre.ethers.parseEther("0.05") });
     await tx.wait();
-
+    
    setTimeout(async()=>{
 
     const checkStatus = await queryGraphQL({search:await tx?.hash})

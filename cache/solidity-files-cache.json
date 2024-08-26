@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "E:\\coding2024\\crossDAO\\contracts\\GovernanceCore.sol": {
-      "lastModificationDate": 1724176163904,
-      "contentHash": "d07190e2e4279316dbe55f2612b9297f",
+      "lastModificationDate": 1724569854527,
+      "contentHash": "a643ef197f049371878314b73769f5a6",
       "sourceName": "contracts/GovernanceCore.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -225,8 +225,8 @@
       ]
     },
     "E:\\coding2024\\crossDAO\\contracts\\GovernanceProxy.sol": {
-      "lastModificationDate": 1724170071712,
-      "contentHash": "edd065add6e71705be11797535ccdf7b",
+      "lastModificationDate": 1724569851460,
+      "contentHash": "ee6ab0b2e8bfe52d041491967eb5e3fd",
       "sourceName": "contracts/GovernanceProxy.sol",
       "solcConfig": {
         "version": "0.8.20",

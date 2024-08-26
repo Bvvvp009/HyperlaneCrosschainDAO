@@ -204,7 +204,7 @@ const App = () => {
             <Text mt={2}><strong>Execution Chain:</strong> {proposal?.executionChain}</Text>
             <Text mt={2}><strong>Target Contract:</strong> {proposal?.target}</Text>
             <Text mt={2}><strong>Call Data:</strong> {proposal?.callData}</Text>
-            <Text mt={2}><strong>For:</strong> {ethers.parseEther((`${proposal?.forVotes}`))}</Text>
+            <Text mt={2}><strong>For:</strong> {((`${proposal?.forVotes}`))}</Text>
             <Text><strong>Against:</strong> {proposal?.againstVotes}</Text>
             <Text mt={2}><strong>Start Time:</strong> {new Date(proposal?.startTime * 1000).toLocaleString()}</Text>
             <Text><strong>Executed:</strong> {proposal?.executed ? "Yes" : "No"}</Text>

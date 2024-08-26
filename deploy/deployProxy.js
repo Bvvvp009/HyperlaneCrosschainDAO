@@ -9,7 +9,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const mailboxAddress = mailbox[chainId];
   const governanceTokenAddress = "0x7df9A5B92443B96bF876A43f3Af61d0f50bb61A0";  //governace token address
   const homeDomain = 11155111;
-  const homeCoreAddress = "0x1C4d29F59d8e603B2403F7C0187781482Db6442B" //homeCore Address in bytes32
+  const homeCoreAddress = "0xc55405B2f3a0cD0d6f2Eb5DA838E9EA73421002B" //homeCore Address in bytes32
 
   console.log("----------------------------------------------------");
   console.log("Deploying GovernanceProxy and waiting for confirmations...");
@@ -26,4 +26,4 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
 module.exports.tags = ["all","deployProxy"];
 
-//0x17c87634233C3e26DffFDAe63ddFb15bd633A615
+//0x40dA3bc1FDbb791f92e689A1b9743B34c0cb5162

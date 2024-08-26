@@ -46,7 +46,7 @@ const App = () => {
     "function vote(uint256 proposalId, bool support) external"
   ];
 
-  const contractAddress = "0x1C4d29F59d8e603B2403F7C0187781482Db6442B";
+  const contractAddress = "0xc55405B2f3a0cD0d6f2Eb5DA838E9EA73421002B";
 
   const getActiveProposals = async () => {
     setIsLoading(true);
@@ -126,7 +126,7 @@ const App = () => {
       const provider = new ethers.BrowserProvider(walletProvider);
       const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, abi, signer);
-      await contract.vote(1, true);
+      await contract.vote(proposalId, true);
       toast({
         title: "Vote Recorded",
         description: "Your vote has been successfully recorded.",
@@ -225,8 +225,8 @@ const App = () => {
   return (
     <ChakraProvider>
       <Flex direction="column" minH="100vh" bg="pink.100">
-        <Flex as="header" bg="green.500" p={4} boxShadow="md">
-          <Heading color="white" size="lg">
+        <Flex as="header" bg="blue.600" p={4} boxShadow="md">
+          <Heading color="pink.600" size="lg">
             Hype DAO
           </Heading>
           <Spacer />
@@ -238,7 +238,7 @@ const App = () => {
         <Flex flex="1">
           <VStack
             as="nav"
-            bg="green.400"
+            bg="blue.400"
             color="white"
             p={4}
             spacing={4}
@@ -246,12 +246,12 @@ const App = () => {
             width="200px"
             boxShadow="md"
           >
-            <Button variant="link" onClick={getActiveProposals}>List Proposals</Button>
-            <Button variant="link" onClick={onOpen}>Create Proposal</Button>
+            <Button variant="link" color="black" onClick={getActiveProposals}>List Proposals</Button>
+            <Button variant="link" color="black" onClick={onOpen}>Create Proposal</Button>
           </VStack>
 
           <Box flex="1" p={6}>
-        <Heading size="md" color="green.600" mb={4}>
+        <Heading size="md" color="pink.600" mb={4}>
           Active Proposals
         </Heading>
         {isLoading ? (

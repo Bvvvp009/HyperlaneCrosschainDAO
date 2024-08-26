@@ -94,13 +94,14 @@ contract GovernanceProxy {
             revert("Invalid action type");
         }
     }
-function _handleProposalCreation(bytes calldata _body) internal {
+
+    function _handleProposalCreation(bytes calldata _body) internal {
         (,uint256 proposalId, string memory description, uint32 executionChain, address target, bytes memory callData) = abi.decode(_body, (uint256, uint256, string, uint32, address, bytes));
         require(proposals[proposalId].id == 0, "Proposal already exists");
 
         Proposal storage newProposal = proposals[proposalId];
         newProposal.id = proposalId;
-        newProposal.proposer = msg.sender; // Set the proposer
+        newProposal.proposer = msg.sender;
         newProposal.description = description;
         newProposal.startTime = block.timestamp;
         newProposal.endTime = block.timestamp + 7 days;
@@ -135,6 +136,7 @@ function _handleProposalCreation(bytes calldata _body) internal {
 
         return activeProposalsInfo;
     }
+
     function _handleVoteCollection(bytes calldata _body) internal {
         (,uint256 proposalId) = abi.decode(_body, (uint256, uint256));
         Proposal storage proposal = proposals[proposalId];
@@ -170,7 +172,7 @@ function _handleProposalCreation(bytes calldata _body) internal {
     function vote(uint256 proposalId, bool support) external {
         Proposal storage proposal = proposals[proposalId];
         require(proposal.id != 0, "Proposal does not exist");
-        require(!proposal.hasVoted[msg.sender], "Already voted");
+        require(!proposal.hasVoted[msg.sender], "Already voted on this proposal");
         require(block.timestamp <= proposal.endTime, "Voting period ended");
         
         uint256 weight = governanceToken.balanceOf(msg.sender);
@@ -185,6 +187,4 @@ function _handleProposalCreation(bytes calldata _body) internal {
 
         emit Voted(proposalId, msg.sender, support, weight);
     }
-
-  
 }

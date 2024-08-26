@@ -10,4 +10,4 @@ task("add-chains", "Gets all active proposals")
   console.log("Chain added:", await addChains.wait());
 });
 
-// npx hardhat add-chains --network sepolia --chain-id 534351 --contract 0x1C4d29F59d8e603B2403F7C0187781482Db6442B  --address 0x7ab351416f3394F1660dE6a6a5dCE32EEc736518
+// npx hardhat add-chains --network sepolia --chain-id 534351 --contract 0xc55405B2f3a0cD0d6f2Eb5DA838E9EA73421002B  --address 0x40dA3bc1FDbb791f92e689A1b9743B34c0cb5162

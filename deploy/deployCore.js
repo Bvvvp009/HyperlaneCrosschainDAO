@@ -29,4 +29,4 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 module.exports.tags = ["all", "deployCore"];
 
 
-//0x7201cc55ce8d1091cd708bcd7f7dda19b3403bce
+//0xc55405B2f3a0cD0d6f2Eb5DA838E9EA73421002B

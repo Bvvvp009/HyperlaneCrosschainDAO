@@ -43,8 +43,29 @@ const App = () => {
   const abi = [
     "function getActiveProposals() external view returns (tuple(uint256 id, address proposer, string description, uint256 forVotes, uint256 againstVotes, uint256 startTime, bool executed, uint32 executionChain, address target, bytes callData)[] memory)",
     "function createProposal(string memory description, uint32 executionChain, address target, bytes memory callData) external payable",
-    "function vote(uint256 proposalId, bool support) external"
+    "function vote(uint256 proposalId, bool support) external",
+  
   ];
+
+  const abiChains =   [{
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "supportedChains",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }]
 
   const contractAddress = "0xc55405B2f3a0cD0d6f2Eb5DA838E9EA73421002B";
 
@@ -53,7 +74,9 @@ const App = () => {
     try {
       const provider = new ethers.BrowserProvider(walletProvider);
       const contract = new Contract(contractAddress, abi, provider);
+      const contract1 = new Contract(contractAddress, abiChains, provider);
       
+    // console.log(chains.map(chain => Number(chain)));
       const activeProposals = await contract.getActiveProposals();
       
       const proposalsData = activeProposals.map(proposal => ({
@@ -80,6 +103,9 @@ const App = () => {
           isClosable: true,
         });
       }
+
+      const chains = await contract1.supportedChains(0);
+      console.log(chains)
     } catch (error) {
       console.error("Error in getActiveProposals:", error);
       toast({
